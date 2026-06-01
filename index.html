@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { display: flex; background-color: #f4f6f9; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar Styling */
+        .sidebar { width: 300px; background-color: #2c3e50; color: white; display: flex; flex-direction: column; overflow-y: auto; }
+        .sidebar h2 { text-align: center; padding: 20px 10px; font-size: 16px; color: #3498db; border-bottom: 1px solid #34495e; font-weight: bold; letter-spacing: 0.5px; }
+        .role-section { background-color: #1a252f; padding: 8px 15px; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #7f8c8d; letter-spacing: 1px; }
+        .sidebar button { background: none; border: none; color: #bdc3c7; text-align: left; padding: 12px 20px; font-size: 13px; cursor: pointer; transition: 0.2s; width: 100%; display: flex; align-items: center; }
+        .sidebar button:hover, .sidebar button.active { background-color: #34495e; color: white; border-left: 4px solid #3498db; }
+        
+        /* Content Window */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .header { background-color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .header h1 { font-size: 20px; color: #2c3e50; }
+        .user-badge { background-color: #ecf0f1; padding: 5px 12px; border-radius: 20px; font-size: 13px; color: #34495e; font-weight: bold; }
+        
+        /* Interfaces Views */
+        .interface-view { padding: 30px; display: none; }
+        .interface-view.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Common UI Elements */
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); max-width: 700px; margin: 0 auto; }
+        .card h3 { margin-bottom: 20px; color: #2c3e50; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; font-size: 18px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #57606f; font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; }
+        .btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; }
+        .btn:hover { background-color: #2980b9; }
+        .btn-success { background-color: #2ecc71; }
+        .btn-success:hover { background-color: #27ae60; }
+        .btn-danger { background-color: #e74c3c; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; font-size: 13px; }
+        th { background-color: #f8f9fa; color: #495057; }
+        .status { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .status-pending { background-color: #ffeaa7; color: #b7791f; }
+        .status-done { background-color: #dff9fb; color: #0abde3; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>EMPLOYEE MANAGEMENT SYSTEM</h2>
+        
+        <div class="role-section">Authentication</div>
+        <button class="nav-link active" onclick="showInterface(event, 'int-login', 'Auth System')">🔐 Int 1: Login/Logout Portal</button>
+
+        <div class="role-section">Manager Module</div>
+        <button class="nav-link" onclick="showInterface(event, 'int-mgr-assign', 'Manager Control')">📝 Int 2: Assign New Task</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-mgr-track', 'Manager Control')">📊 Int 3: Track Task Progress</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-mgr-reassign', 'Manager Control')">🔄 Int 4: Update/Reassign Task</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-mgr-perf', 'Manager Control')">📈 Int 5: Monitor Employee Progress</button>
+
+        <div class="role-section">HR Department</div>
+        <button class="nav-link" onclick="showInterface(event, 'int-hr-add', 'HR Operations')">➕ Int 6: Add New Employee</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-hr-attn', 'HR Operations')">📅 Int 7: View Attendance Records</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-hr-update', 'HR Operations')">✏️ Int 8: Update Employee Records</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-hr-sal', 'HR Operations')">💰 Int 9: View/Update Salary Status</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-hr-recruit', 'HR Operations')">🤝 Int 10: Recruitment Portal</button>
+
+        <div class="role-section">Employee Self Service</div>
+        <button class="nav-link" onclick="showInterface(event, 'int-emp-view', 'Employee Dashboard')">📂 Int 11: View Assigned Tasks</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-emp-upload', 'Employee Dashboard')">📤 Int 12: Upload/Submit Task</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-emp-status', 'Employee Dashboard')">⚡ Int 13: Update Task Status</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-emp-mark', 'Employee Dashboard')">📌 Int 14: Mark Attendance</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-emp-sal', 'Employee Dashboard')">💵 Int 15: View Salary Slip</button>
+
+        <div class="role-section">Delivery Staff Portal</div>
+        <button class="nav-link" onclick="showInterface(event, 'int-del-view', 'Delivery Desk')">📦 Int 16: View Delivery Tasks</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-del-status', 'Delivery Desk')">⏳ Int 17: Update Delivery Status</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-del-comp', 'Delivery Desk')">✅ Int 18: Mark as Completed</button>
+
+        <div class="role-section">Mentor / Trainer</div>
+        <button class="nav-link" onclick="showInterface(event, 'int-ment-assign', 'Mentorship Module')">🎯 Int 19: Assign Trainee Task</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-ment-view', 'Mentorship Module')">👁️ Int 20: View Trainee Progress</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-ment-status', 'Mentorship Module')">📈 Int 21: Update Training Status</button>
+
+        <div class="role-section">Quality Control (QC)</div>
+        <button class="nav-link" onclick="showInterface(event, 'int-qc-view', 'QC Center')">🔍 Int 22: View Completed Tasks</button>
+        <button class="nav-link" onclick="showInterface(event, 'int-qc-action', 'QC Center')">⚖️ Int 23: Approve/Reject & Feedback</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1 id="current-title">Int 1: Login/Logout Portal</h1>
+            <div class="user-badge" id="current-badge">Auth System</div>
+        </div>
+
+        <div id="int-login" class="interface-view active">
+            <div class="card">
+                <h3>System Gateway - Login / Logout</h3>
+                <div class="form-group">
+                    <label>Username / Academic ID</label>
+                    <input type="text" placeholder="IU04-0124-0454" value="IU04-0124-0454">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="••••••••" value="password123">
+                </div>
+                <button class="btn" onclick="alert('Logged in successfully!')">Authenticate Securely</button>
+            </div>
+        </div>
+
+        <div id="int-mgr-assign" class="interface-view">
+            <div class="card">
+                <h3>Interface: Assign Task Form</h3>
+                <div class="form-group">
+                    <label>Task Title</label>
+                    <input type="text" placeholder="e.g., Core ERP System Design">
+                </div>
+                <div class="form-group">
+                    <label>Target Employee</label>
+                    <select><option>Urooba</option><option>Washma Khan</option><option>Fizza Fatima</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Detailed Requirements Sheet</label>
+                    <textarea rows="4" placeholder="Mention milestones and standards..."></textarea>
+                </div>
+                <button class="btn btn-success">Dispatch Task to Employee</button>
+            </div>
+        </div>
+
+        <div id="int-mgr-track" class="interface-view">
+            <div class="card" style="max-width: 90%;">
+                <h3>Interface: Live Task Progress Tracker</h3>
+                <table>
+                    <tr><th>Task Ref</th><th>Assigned Resource</th><th>Submission Status</th><th>Timeline Remaining</th></tr>
+                    <tr><td>#TSK-901</td><td>Fizza Fatima</td><td><span class="status status-pending">In Progress</span></td><td>2 Days</td></tr>
+                    <tr><td>#TSK-902</td><td>Urooba</td><td><span class="status status-done">Submitted to QC</span></td><td>Completed Today</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div id="int-mgr-reassign" class="interface-view">
+            <div class="card">
+                <h3>Interface: Update / Reassign Active Task</h3>
+                <div class="form-group">
+                    <label>Select Active Task to Modify</label>
+                    <select><option>#TSK-901 - Database Optimization</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Reassign to Alternative Resource</label>
+                    <select><option>Huda Khan</option><option>Washma Khan</option></select>
+                </div>
+                <button class="btn" style="background-color: #f39c12;">Update & Route Task</button>
+            </div>
+        </div>
+
+        <div id="int-mgr-perf" class="interface-view">
+            <div class="card">
+                <h3>Interface: Employee Performance Analytics</h3>
+                <p>Overall Productivity Monitoring View:</p>
+                <div style="background:#f8f9fa; padding:15px; margin-top:10px; border-radius:5px;">
+                    <strong>Washma Khan:</strong> 92% Efficiency Rating | 0 Rejected Tasks
+                </div>
+                <div style="background:#f8f9fa; padding:15px; margin-top:10px; border-radius:5px;">
+                    <strong>Huda Khan:</strong> 88% Efficiency Rating | 1 Minor QC Refusal
+                </div>
+            </div>
+        </div>
+
+        <div id="int-hr-add" class="interface-view">
+            <div class="card">
+                <h3>Interface: Onboard New Employee Profile</h3>
+                <div class="form-group"><label>First Name</label><input type="text"></div>
+                <div class="form-group"><label>Assigned Department Role</label><select><option>Software Engineer</option><option>QC Analyst</option></select></div>
+                <button class="btn btn-success">Save Profile to System Data</button>
+            </div>
+        </div>
+
+        <div id="int-hr-attn" class="interface-view">
+            <div class="card" style="max-width: 90%;">
+                <h3>Interface: Corporate Attendance Logbook</h3>
+                <table>
+                    <tr><th>Employee ID</th><th>Name</th><th>Punch-In Time</th><th>Status</th></tr>
+                    <tr><td>IU04-0124-0212</td><td>Urooba</td><td>08:55 AM</td><td>On-Time</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div id="int-hr-update" class="interface-view">
+            <div class="card">
+                <h3>Interface: Edit Employee Dynamic Record</h3>
+                <div class="form-group"><label>Search Employee By ID</label><input type="text" value="IU04-0124-0454"></div>
+                <div class="form-group"><label>Update Primary Address / Phone</label><input type="text" value="North Campus Area, Karachi"></div>
+                <button class="btn">Commit Modifications</button>
+            </div>
+        </div>
+
+        <div id="int-hr-sal" class="interface-view">
+            <div class="card">
+                <h3>Interface: Salary Status & Payroll Processing</h3>
+                <table>
+                    <tr><th>Staff</th><th>Basic Scale</th><th>Allowances</th><th>Disbursement Status</th></tr>
+                    <tr><td>Fizza Fatima</td><td>PKR 85,000</td><td>PKR 5,000</td><td><span class="status status-done" style="background:#2ecc71; color:white;">Transferred</span></td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div id="int-hr-recruit" class="interface-view">
+            <div class="card">
+                <h3>Interface: Applicant Tracking & Recruitment</h3>
+                <div style="border: 1px solid #ccc; padding:10px; border-radius:5px;">
+                    <h4>Applicant Profile: Daniyal Ahmed</h4>
+                    <p>Applied for: Assistant SE Project Coordinator</p>
+                    <button class="btn btn-success" style="width:auto; padding:5px 10px; font-size:12px;">Shortlist</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="int-emp-view" class="interface-view">
+            <div class="card">
+                <h3>Interface: My Task Inbox</h3>
+                <div style="background:#fff3cd; padding:15px; border-radius:5px; border-left:5px solid #ffc107;">
+                    <strong>Urgent Task:</strong> Build Frontend Views for EMS Assignment.
+                </div>
+            </div>
+        </div>
+
+        <div id="int-emp-upload" class="interface-view">
+            <div class="card">
+                <h3>Interface: Repository File Upload</h3>
+                <div class="form-group">
+                    <label>Select Deployment ZIP / File</label>
+                    <input type="file">
+                </div>
+                <button class="btn btn-success">Upload & Send to Quality Control</button>
+            </div>
+        </div>
+
+        <div id="int-emp-status" class="interface-view">
+            <div class="card">
+                <h3>Interface: Self Task Status Toggler</h3>
+                <label>Set Progress Node:</label>
+                <select><option>Stuck / Blocked</option><option>Coding Stage</option><option>Ready for Evaluation</option></select>
+                <button class="btn" style="margin-top:10px;">Sync Status</button>
+            </div>
+        </div>
+
+        <div id="int-emp-mark" class="interface-view">
+            <div class="card" style="text-align:center;">
+                <h3>Interface: Daily Digital Punch Card</h3>
+                <p style="margin-bottom:15px; color:#7f8c8d;">Current System Date Time: Local Gateway Server</p>
+                <button class="btn btn-success" style="font-size:18px;" onclick="alert('Attendance timestamped into DB.')">🔴 Click to Mark Present</button>
+            </div>
+        </div>
+
+        <div id="int-emp-sal" class="interface-view">
+            <div class="card">
+                <h3>Interface: Personal Salary Statement View</h3>
+                <p><strong>Month:</strong> June 2026</p>
+                <p><strong>Net Transferred:</strong> PKR 90,000</p>
+                <p style="color:green;">✔ Verified by Bank Ledger</p>
+            </div>
+        </div>
+
+        <div id="int-del-view" class="interface-view">
+            <div class="card"><h3>Interface: Delivery Task Sheet</h3> <p>Task: Deliver project documentation binder to Ms. Faiza's office.</p></div>
+        </div>
+        
+        <div id="int-del-status" class="interface-view">
+            <div class="card"><h3>Interface: Delivery Status Modifier</h3> <select><option>Out for Delivery</option><option>Delayed</option></select><button class="btn" style="margin-top:10px;">Update</button></div>
+        </div>
+        
+        <div id="int-del-comp" class="interface-view">
+            <div class="card" style="text-align:center;"><h3>Interface: Execution Logger</h3> <button class="btn btn-success" onclick="alert('Marked Completed')">Mark Order as Completed</button></div>
+        </div>
+
+        <div id="int-ment-assign" class="interface-view">
+            <div class="card"><h3>Interface: Training Directives Creator</h3> <div class="form-group"><label>Training Modules</label><input type="text" placeholder="HTML Semantic Structuring"></div><button class="btn">Assign Module</button></div>
+        </div>
+        
+        <div id="int-ment-view" class="interface-view">
+            <div class="card"><h3>Interface: Trainee Performance Console</h3> <p>Intern Profile A: 4 modules parsed out of 5.</p></div>
+        </div>
+        
+        <div id="int-ment-status" class="interface-view">
+            <div class="card"><h3>Interface: Training Certification Toggler</h3> <label>Current Level</label><select><option>Beginner Phase Done</option><option>Onboarding Finalized</option></select></div>
+        </div>
+
+        <div id="int-qc-view" class="interface-view">
+            <div class="card"><h3>Interface: Completed Artifacts Queue</h3> <p>File pending review: <code>Authentication_Component.zip</code> (Submitted by Urooba).</p></div>
+        </div>
+        
+        <div id="int-qc-action" class="interface-view">
+            <div class="card">
+                <h3>Interface: Evaluation & Error Logging</h3>
+                <div class="form-group"><label>Feedback Notes</label><textarea placeholder="Specify formatting or logical defects discovered..."></textarea></div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-success" onclick="alert('Approved!')">Approve Asset</button>
+                    <button class="btn btn-danger" style="background:#e74c3c;" onclick="alert('Rejected!')">Reject Asset</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showInterface(event, viewId, roleGroup) {
+            // 1. Hide all interface panels
+            const views = document.querySelectorAll('.interface-view');
+            views.forEach(view => view.classList.remove('active'));
+            
+            // 2. Remove 'active' class from all sidebar buttons
+            const links = document.querySelectorAll('.nav-link');
+            links.forEach(link => link.classList.remove('active'));
+            
+            // 3. Show the targeted interface panel
+            document.getElementById(viewId).classList.add('active');
+            
+            // 4. Set the clicked sidebar button as active
+            event.currentTarget.classList.add('active');
+            
+            // 5. Update top header text dynamically
+            document.getElementById('current-title').innerText = event.currentTarget.innerText;
+            document.getElementById('current-badge').innerText = roleGroup;
+        }
+    </script>
+</body>
+</html>
