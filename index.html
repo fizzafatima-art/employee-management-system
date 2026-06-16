@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System - Iqra University</title>
+    <style>
+        /* --- CSS STYLING --- */
+        :root {
+            --primary-color: #2c3e50; /* Dark Blue */
+            --accent-color: #3498db;  /* Bright Blue */
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --light-bg: #f4f6f9;
+            --text-dark: #2c3e50;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { display: flex; background-color: var(--light-bg); height: 100vh; overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar { width: 280px; background-color: var(--primary-color); color: white; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+        .sidebar-header { padding: 20px; text-align: center; background-color: #1a252f; border-bottom: 2px solid var(--accent-color); }
+        .sidebar-header h2 { font-size: 16px; color: var(--accent-color); margin-bottom: 5px; }
+        .sidebar-header p { font-size: 10px; color: #bdc3c7; }
+
+        .role-group { margin-top: 10px; border-bottom: 1px solid #34495e; }
+        .role-title { padding: 8px 15px; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #95a5a6; background: #1a252f; letter-spacing: 1px; }
+        
+        .nav-btn { background: none; border: none; color: #bdc3c7; text-align: left; padding: 10px 20px; font-size: 12px; cursor: pointer; transition: 0.2s; width: 100%; display: flex; align-items: center; border-left: 3px solid transparent; }
+        .nav-btn:hover { background-color: #34495e; color: white; padding-left: 25px; }
+        .nav-btn.active { background-color: var(--accent-color); color: white; border-left: 4px solid white; font-weight: 600; }
+
+        /* Main Content */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Header */
+        header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; }
+        .header-info h1 { font-size: 18px; color: var(--primary-color); margin-bottom: 3px; }
+        .header-info span { font-size: 11px; color: #7f8c8d; }
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-badge { background: #ecf0f1; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; color: var(--primary-color); }
+        .btn-logout { background: var(--danger-color); color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+        /* Content Area */
+        .content-area { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
+
+        /* Generic UI Components */
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 900px; margin: 0 auto; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card h2 { color: var(--primary-color); margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; }
+        .card h3 { color: #555; margin: 15px 0 10px 0; font-size: 16px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group.full { grid-column: span 2; }
+        
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #57606f; font-size: 12px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; transition: 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent-color); outline: none; }
+
+        /* Buttons */
+        .btn { background-color: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn:hover { background-color: #2980b9; }
+        .btn-success { background-color: var(--success-color); }
+        .btn-success:hover { background-color: #27ae60; }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-block { width: 100%; }
+        
+        /* Captcha */
+        .captcha-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .captcha-box { background: #f8f9fa; border: 1px solid #bdc3c7; padding: 10px 20px; font-family: 'Courier New', monospace; font-size: 20px; font-weight: bold; letter-spacing: 3px; border-radius: 4px; user-select: none; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th { background: #f8f9fa; color: #555; text-align: left; padding: 12px; font-weight: 600; border-bottom: 2px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:hover { background-color: #fafafa; }
+        
+        .status { padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .status-done { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-fail { background: #f8d7da; color: #721c24; }
+
+        /* Helper Classes */
+        .hidden { display: none !important; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #f8f9fa; padding: 15px; border-radius: 5px; text-align: center; }
+        .stat-num { font-size: 24px; font-weight: bold; color: var(--accent-color); display: block; }
+        .stat-label { font-size: 12px; color: #777; }
+
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR (Will be populated by JS) -->
+    <div class="sidebar" id="sidebar-container">
+        <div class="sidebar-header">
+            <h2>EMS - IQRA UNI</h2>
+            <p>Project by: Urooba, Washma, Fizza, Huda</p>
+            <p style="margin-top:5px; font-style:italic;">Supervisor: Ms. Faiza Javaid</p>
+        </div>
+        <!-- Javascript will inject buttons here -->
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <header>
+            <div class="header-info">
+                <h1 id="page-title">Login Portal</h1>
+                <span id="page-subtitle">Secure Authentication Gateway</span>
+            </div>
+            <div class="user-profile hidden" id="user-profile-section">
+                <div class="user-badge">Logged in as: Admin</div>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <div class="content-area" id="content-display">
+            <!-- Javascript will inject content here -->
+        </div>
+    </div>
+
+    <script>
+        // --- DATA STRUCTURE FOR 50 INTERFACES ---
+        // Yahan hum define kar rahe hain ke 50 interfaces kya dikhenge aur unke titles kya honge.
+        
+        const modules = [
+            {
+                role: "Authentication",
+                interfaces: [
+                    { id: "login", title: "System Login", type: "login" },
+                    { id: "profile", title: "User Profile Settings", type: "form_profile" }
+                ]
+            },
+            {
+                role: "Manager Module",
+                interfaces: [
+                    { id: "mgr_assign", title: "Assign New Task", type: "form_task" },
+                    { id: "mgr_track", title: "Track Task Progress", type: "table_tasks" },
+                    { id: "mgr_reassign", title: "Reassign Task", type: "form_reassign" },
+                    { id: "mgr_perf", title: "Employee Performance", type: "table_simple" },
+                    { id: "mgr_team", title: "Team Overview", type: "dashboard_team" },
+                    { id: "mgr_reports", title: "Generate Reports", type: "form_generic" },
+                    { id: "mgr_approve_leave", title: "Approve Leaves", type: "table_simple" },
+                    { id: "mgr_notif", title: "Send Notifications", type: "form_generic" }
+                ]
+            },
+            {
+                role: "HR Department",
+                interfaces: [
+                    { id: "hr_add", title: "Add New Employee", type: "form_employee" },
+                    { id: "hr_search", title: "Search Employee", type: "form_search" },
+                    { id: "hr_update", title: "Update Records", type: "form_update" },
+                    { id: "hr_attendance", title: "Attendance Sheet", type: "table_attendance" },
+                    { id: "hr_salary_view", title: "View Salary Status", type: "table_salary" },
+                    { id: "hr_payroll", title: "Process Payroll", type: "form_generic" },
+                    { id: "hr_recruit", title: "Recruitment Portal", type: "table_recruit" },
+                    { id: "hr_shortlist", title: "Shortlist Candidates", type: "table_simple" },
+                    { id: "hr_exit", title: "Employee Exit Form", type: "form_generic" },
+                    { id: "hr_holidays", title: "Manage Holidays", type: "table_simple" }
+                ]
+            },
+            {
+                role: "Employee Self-Service",
+                interfaces: [
+                    { id: "emp_dash", title: "My Dashboard", type: "dashboard_emp" },
+                    { id: "emp_tasks", title: "View My Tasks", type: "table_tasks" },
+                    { id: "emp_upload", title: "Upload Completed Work", type: "form_upload" },
+                    { id: "emp_status", title: "Update Task Status", type: "form_status" },
+                    { id: "emp_attend", title: "Mark Attendance", type: "form_attend" },
+                    { id: "emp_salary", title: "View Salary Slip", type: "card_salary" },
+                    { id: "emp_leave", title: "Apply for Leave", type: "form_generic" },
+                    { id: "emp_docs", title: "My Documents", type: "table_simple" }
+                ]
+            },
+            {
+                role: "Delivery Staff",
+                interfaces: [
+                    { id: "del_view", title: "View Delivery Tasks", type: "table_simple" },
+                    { id: "del_route", title: "View Route Map", type: "dashboard_generic" },
+                    { id: "del_status", title: "Update Delivery Status", type: "form_status" },
+                    { id: "del_complete", title: "Mark as Completed", type: "form_generic" },
+                    { id: "del_history", title: "Delivery History", type: "table_simple" },
+                    { id: "del_issue", title: "Report Issue", type: "form_generic" }
+                ]
+            },
+            {
+                role: "Mentor / Trainer",
+                interfaces: [
+                    { id: "ment_dash", title: "Mentor Dashboard", type: "dashboard_generic" },
+                    { id: "ment_assign", title: "Assign Training Module", type: "form_generic" },
+                    { id: "ment_prog", title: "Trainee Progress", type: "table_simple" },
+                    { id: "ment_eval", title: "Evaluation Form", type: "form_generic" },
+                    { id: "ment_res", title: "Training Resources", type: "table_simple" },
+                    { id: "ment_chat", title: "Trainee Chat/Feedback", type: "dashboard_generic" }
+                ]
+            },
+            {
+                role: "Quality Control (QC)",
+                interfaces: [
+                    { id: "qc_dash", title: "QC Dashboard", type: "dashboard_generic" },
+                    { id: "qc_queue", title: "Pending Reviews Queue", type: "table_tasks" },
+                    { id: "qc_review", title: "Detailed Inspection", type: "form_generic" },
+                    { id: "qc_approve", title: "Approve / Reject Task", type: "form_generic" },
+                    { id: "qc_feedback", title: "Send Feedback", type: "form_generic" },
+                    { id: "qc_logs", title: "Quality Logs", type: "table_simple" },
+                    { id: "qc_report", title: "Quality Analysis Report", type: "dashboard_generic" },
+                    { id: "qc_standards", title: "View Quality Standards", type: "card_salary" }
+                ]
+            }
+        ];
+
+        // --- GENERATION LOGIC ---
+
+        const sidebarContainer = document.getElementById('sidebar-container');
+        const contentDisplay = document.getElementById('content-display');
+        let currentCaptcha = "";
+
+        function initSystem() {
+            // 1. Build Sidebar and HTML Templates
+            let htmlContent = '';
+            
+            modules.forEach((module, mIndex) => {
+                // Add Role Header
+                let roleDiv = document.createElement('div');
+                roleDiv.className = 'role-group';
+                roleDiv.innerHTML = `<div class="role-title">${module.role}</div>`;
+                
+                // Add Buttons and Content Templates
+                module.interfaces.forEach((item, iIndex) => {
+                    // Create Sidebar Button
+                    let btn = document.createElement('button');
+                    btn.className = 'nav-btn';
+                    btn.id = `btn-${item.id}`;
+                    btn.innerHTML = `<span style="margin-right:10px;">➤</span> ${item.title}`;
+                    btn.onclick = () => loadInterface(item);
+                    if(item.id === 'login') btn.classList.add('active'); // Default active
+                    roleDiv.appendChild(btn);
+
+                    // Create Content Div (Hidden by default)
+                    let viewDiv = document.createElement('div');
+                    viewDiv.id = `view-${item.id}`;
+                    viewDiv.className = 'card hidden';
+                    viewDiv.innerHTML = getTemplateHTML(item);
+                    
+                    // Append to a hidden global container or just inject into DOM hidden?
+                    // We will inject into DOM but hide them.
+                    contentDisplay.appendChild(viewDiv);
+                });
+                
+                sidebarContainer.appendChild(roleDiv);
+            });
+
+            // 2. Initialize Captcha
+            generateCaptcha();
+            
+            // 3. Load Login by default
+            loadInterface(modules[0].interfaces[0]);
+        }
+
+        // --- HTML TEMPLATES (Smart Generator) ---
+       function getTemplateHTML(item) {
+    if (item.type === 'login') return getLoginTemplate();
+
+    let html = `<h2>${item.title}</h2>`;
+
+    // ✅ ATTENDANCE TABLE - Updated with real employee data
+    if (item.type === 'table_attendance') {
+        return `<h2>Attendance Sheet</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Emp ID</th>
+                    <th>Employee Name</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Check-In</th>
+                    <th>Check-Out</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>IU-001</td><td>Urooba Khan</td><td>2024-06-01</td>
+                    <td><span class="status status-done">Present</span></td>
+                    <td>09:00 AM</td><td>05:00 PM</td>
+                </tr>
+                <tr>
+                    <td>IU-002</td><td>Washma Tariq</td><td>2024-06-01</td>
+                    <td><span class="status status-pending">Late</span></td>
+                    <td>10:15 AM</td><td>05:00 PM</td>
+                </tr>
+                <tr>
+                    <td>IU-003</td><td>Fizza Malik</td><td>2024-06-01</td>
+                    <td><span class="status status-fail">Absent</span></td>
+                    <td>—</td><td>—</td>
+                </tr>
+                <tr>
+                    <td>IU-001</td><td>Urooba Khan</td><td>2024-06-02</td>
+                    <td><span class="status status-done">Present</span></td>
+                    <td>08:55 AM</td><td>05:10 PM</td>
+                </tr>
+                <tr>
+                    <td>IU-002</td><td>Washma Tariq</td><td>2024-06-02</td>
+                    <td><span class="status status-done">Present</span></td>
+                    <td>09:05 AM</td><td>05:00 PM</td>
+                </tr>
+                <tr>
+                    <td>IU-003</td><td>Fizza Malik</td><td>2024-06-02</td>
+                    <td><span class="status status-done">Present</span></td>
+                    <td>09:30 AM</td><td>05:00 PM</td>
+                </tr>
+            </tbody>
+        </table>`;
+    }
+
+    // Generic forms
+    if (item.type.includes('form')) {
+        html += `
+        <div class="form-row">
+            <div class="form-group"><label>Reference ID / Date</label><input type="text" placeholder="Auto-Generated"></div>
+            <div class="form-group"><label>Department / Category</label><select><option>Engineering</option><option>HR</option><option>Logistics</option></select></div>
+        </div>
+        <div class="form-group full"><label>Description / Details</label><textarea rows="4" placeholder="Enter details here..."></textarea></div>
+        <button class="btn btn-success btn-block" onclick="showSuccessMsg()">Submit Information</button>`;
+    } else if (item.type.includes('table')) {
+        html += `
+        <table>
+            <thead><tr><th>ID</th><th>Name/Ref</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody>
+                <tr><td>001</td><td>Sample Record 1</td><td><span class="status status-done">Active</span></td><td>2023-10-01</td><td><button class="btn btn-danger" style="padding:2px 5px; font-size:10px;">View</button></td></tr>
+                <tr><td>002</td><td>Sample Record 2</td><td><span class="status status-pending">Pending</span></td><td>2023-10-02</td><td><button class="btn btn-danger" style="padding:2px 5px; font-size:10px;">View</button></td></tr>
+                <tr><td>003</td><td>Sample Record 3</td><td><span class="status status-fail">Rejected</span></td><td>2023-10-03</td><td><button class="btn btn-danger" style="padding:2px 5px; font-size:10px;">View</button></td></tr>
+            </tbody>
+        </table>`;
+    } else if (item.type.includes('dashboard')) {
+        html += `
+        <div class="grid-3">
+            <div class="stat-card"><span class="stat-num">12</span><span class="stat-label">Pending Tasks</span></div>
+            <div class="stat-card"><span class="stat-num">85%</span><span class="stat-label">Efficiency</span></div>
+            <div class="stat-card"><span class="stat-num">5</span><span class="stat-label">Alerts</span></div>
+        </div>
+        <h3>Recent Activity</h3>
+        <p style="color:#777; font-size:13px;">System running smoothly. Last backup: Today 8:00 AM.</p>`;
+    }
+
+    if(item.id === 'mgr_assign') {
+        html = `<h2>Assign New Task</h2>
+        <div class="form-row">
+            <div class="form-group"><label>Task Title</label><input type="text"></div>
+            <div class="form-group"><label>Assign To</label><select><option>Urooba (Dev)</option><option>Washma (Dev)</option><option>Fizza (Tester)</option><option>Huda (Designer)</option></select></div>
+        </div>
+        <div class="form-group full"><label>Requirements</label><textarea rows="3"></textarea></div>
+        <button class="btn btn-success btn-block">Dispatch Task</button>`;
+    }
+
+    return html;
+}
+
+        function getLoginTemplate() {
+            return `
+                <h2>Employee Management System Login</h2>
+                <p style="margin-bottom:20px; color:#666;">Please enter your credentials to access the portal.</p>
+                
+                <div class="form-group">
+                    <label>Username / ID</label>
+                    <input type="text" id="login-user" placeholder="e.g., IU04-0124-0454" value="admin">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-pass" placeholder="••••••••" value="password123">
+                </div>
+                <div class="form-group">
+                    <label>Security Check</label>
+                    <div class="captcha-container">
+                        <div class="captcha-box" id="captcha-display">AAAA</div>
+                        <button class="btn btn-refresh" style="width:auto; font-size:12px;" onclick="generateCaptcha()">🔄</button>
+                    </div>
+                    <input type="text" id="captcha-input" placeholder="Enter Code" style="text-transform:uppercase;">
+                </div>
+                <button class="btn btn-success btn-block" onclick="attemptLogin()">Authenticate Securely</button>
+                <div style="margin-top:10px; text-align:center; font-size:11px; color:#999;">Hint: Password is 'password123'</div>
+            `;
+        }
+
+        // --- SYSTEM LOGIC ---
+
+        function loadInterface(item) {
+            // Hide all views
+            document.querySelectorAll('.card').forEach(el => el.classList.add('hidden'));
+            // Deactivate all buttons
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            // Show selected view
+            const view = document.getElementById(`view-${item.id}`);
+            if(view) view.classList.remove('hidden');
+            
+            // Activate button
+            const btn = document.getElementById(`btn-${item.id}`);
+            if(btn) btn.classList.add('active');
+
+            // Update Header
+            document.getElementById('page-title').innerText = item.title;
+            document.getElementById('page-subtitle').innerText = `Module: ${item.role}`;
+        }
+
+        function generateCaptcha() {
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            let result = "";
+            for (let i = 0; i < 5; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            currentCaptcha = result;
+            const display = document.getElementById('captcha-display');
+            if(display) display.innerText = currentCaptcha;
+        }
+
+        function attemptLogin() {
+            const user = document.getElementById('login-user').value;
+            const pass = document.getElementById('login-pass').value;
+            const cap = document.getElementById('captcha-input').value.toUpperCase();
+
+            if (pass === 'password123' && cap === currentCaptcha) {
+                alert("✅ Authentication Successful!\n\nWelcome to EMS.");
+                document.getElementById('user-profile-section').classList.remove('hidden');
+                // Redirect to Dashboard (Employee Dashboard for example)
+                loadInterface(modules[3].interfaces[0]); // Load emp_dash
+            } else {
+                alert("❌ Login Failed. Please check credentials or captcha.");
+                generateCaptcha();
+                document.getElementById('captcha-input').value = "";
+            }
+        }
+
+        function logout() {
+            if(confirm("Are you sure you want to logout?")) {
+                document.getElementById('user-profile-section').classList.add('hidden');
+                loadInterface(modules[0].interfaces[0]); // Go back to login
+                document.getElementById('login-pass').value = "";
+                document.getElementById('captcha-input').value = "";
+                generateCaptcha();
+            }
+        }
+
+        function showSuccessMsg() {
+            alert("Action completed successfully!");
+        }
+
+        // --- START ---
+        window.onload = initSystem;
+
+    </script>
+</body>
+</html>
